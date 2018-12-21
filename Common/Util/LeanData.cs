@@ -14,7 +14,6 @@
 */
 
 using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -485,21 +484,28 @@ namespace QuantConnect.Util
                         ) + ".csv";
 
                 case SecurityType.Future:
+                    var expiryDate = symbol.ID.Date;
+                    var contractYearMonth = FuturesExpiryUtilityFunctions.ExpiresInPreviousMonth(symbol.ID.Symbol)
+                        ? expiryDate.AddMonths(1).ToString(DateFormat.YearMonth)
+                        : expiryDate.ToString(DateFormat.YearMonth);
+
                     if (isHourOrDaily)
                     {
                         return string.Join("_",
                             symbol.ID.Symbol.ToLower(),
-                            tickType.TickTypeToLower(),
-                            symbol.ID.Date.ToString(DateFormat.YearMonth)
+                            tickType.ToLower(),
+                            contractYearMonth,
+                            expiryDate.ToString(DateFormat.EightCharacter)
                             ) + ".csv";
                     }
 
                     return string.Join("_",
                         formattedDate,
                         symbol.ID.Symbol.ToLower(),
-                        resolution.ResolutionToLower(),
-                        tickType.TickTypeToLower(),
-                        symbol.ID.Date.ToString(DateFormat.YearMonth)
+                        resolution.ToLower(),
+                        tickType.ToLower(),
+                        contractYearMonth,
+                        expiryDate.ToString(DateFormat.EightCharacter)
                         ) + ".csv";
 
                 case SecurityType.Commodity:

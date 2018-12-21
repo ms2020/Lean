@@ -233,6 +233,38 @@ namespace QuantConnect.ToolBox.AlgoSeekFuturesConverter
                     return null;
                 }
 
+                ticker = ticker.Trim(new char[] { '"' });
+
+                if (_symbolFilter != null && !_symbolFilter.Contains(ticker))
+                {
+                    return null;
+                }
+
+                if (string.IsNullOrEmpty(ticker))
+                {
+                    return null;
+                }
+
+                // ignoring time zones completely -- this is all in the 'data-time-zone'
+                var timeString = csv[_columnTimestamp];
+                var time = DateTime.ParseExact(timeString, "yyyyMMddHHmmssFFF", CultureInfo.InvariantCulture);
+
+                var parsed = SymbolRepresentation.ParseFutureTicker(ticker);
+
+                if (parsed == null)
+                {
+                    return null;
+                }
+
+                var underlying = parsed.Underlying;
+                var expirationYearShort = parsed.ExpirationYearShort;
+                var expirationMonth = parsed.ExpirationMonth;
+                var expirationYear = GetExpirationYear(time, expirationYearShort);
+
+                var expiryFunc = FuturesExpiryFunctions.FuturesExpiryFunction(underlying);
+                var expiryDate = expiryFunc(new DateTime(expirationYear, expirationMonth, 1));
+                var symbol = Symbol.CreateFuture(underlying, Market.USA, expiryDate);
+
                 // All futures but VIX are delivered with a scale factor of 10000000000.
                 var scaleFactor = symbol.ID.Symbol == "VX" ? decimal.One : 10000000000m;
 
