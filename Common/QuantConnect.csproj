@@ -222,6 +222,7 @@
     <Compile Include="Data\Custom\EiaData.cs" />
     <Compile Include="Data\Fundamental\AssetClassificationHelper.cs" />
     <Compile Include="Data\Custom\EiaData.cs" />
+    <Compile Include="Data\Custom\USEnergyInformation.cs" />
     <Compile Include="Data\HistoryProviderBase.cs" />
     <Compile Include="Data\HistoryProviderInitializeParameters.cs" />
     <Compile Include="Data\HistoryRequestFactory.cs" />
