@@ -28,19 +28,8 @@ namespace QuantConnect.Data.Custom
     /// and forecasting across all US energy sectors.
     /// https://www.eia.gov/opendata/
     /// </summary>
-
     public class USEnergyInformation : BaseData
     {
-        /// <summary>
-        /// Declare string representations of different periods and the variable
-        /// to hold our chosen date format
-        /// </summary>
-        private const string _hourly = "yyyyMMdd'T'HH'Z'";
-        private const string _daily = "yyyyMMdd";
-        private const string _monthly = "yyyyMM";
-        private const string _quarterly = "yyyyMMdd";
-        private const string _annual = "yyyy";
-
         /// <summary>
         /// The end time of this data. Some data covers spans (trade bars) and as such we want
         /// to know the entire time span covered
@@ -50,11 +39,7 @@ namespace QuantConnect.Data.Custom
         /// <summary>
         /// The period of this data (hour, month, quarter, or annual)
         /// </summary>
-        public TimeSpan Period
-        {
-            get;
-            private set;
-        }
+        public TimeSpan Period { get; private set; }
 
         /// <summary>
         /// Gets the Eia API token.
@@ -87,7 +72,7 @@ namespace QuantConnect.Data.Custom
         /// <returns>Subscription Data Source.</returns>
         public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
         {
-            var source = $"https://api.eia.gov/series/?api_key={USEnergyInformation.AuthCode}&series_id={config.Symbol}";
+            var source = $"https://api.eia.gov/series/?api_key={AuthCode}&series_id={config.Symbol}";
             return new SubscriptionDataSource(source, SubscriptionTransportMedium.Rest, FileFormat.Collection);
         }
 
@@ -104,23 +89,23 @@ namespace QuantConnect.Data.Custom
                 // Annual data has Period ~ 365 days
                 case 'A':
                     Period = TimeSpan.FromDays(365);
-                    return _annual;
+                    return "yyyy";
                 // Quarterly data has Period ~ 90 days
                 case 'Q':
                     Period = TimeSpan.FromDays(90);
-                    return _quarterly;
+                    return DateFormat.EightCharacter;
                 // Monthly data has Period ~ 30 days
                 case 'M':
                     Period = TimeSpan.FromDays(30);
-                    return _monthly;
+                    return DateFormat.YearMonth;
                 // Daily has Period = 1 day
                 case 'D':
                     Period = TimeSpan.FromDays(1);
-                    return _daily;
+                    return DateFormat.EightCharacter;
                 // Hourly has period = 1 Hour
                 case 'H':
                     Period = TimeSpan.FromHours(1);
-                    return _hourly;
+                    return "yyyyMMdd'T'HH'Z'";
                 default:
                     throw new Exception("Unsupported Period");
             }
@@ -131,7 +116,7 @@ namespace QuantConnect.Data.Custom
         /// </summary>
         /// <param name="dateData">String containing raw date format</param>
         /// <returns>
-        ///     Properly formatted datestring
+        /// Properly formatted datestring
         /// </returns>
         private string QuarterDateHandler(string dateData)
         {
@@ -155,27 +140,33 @@ namespace QuantConnect.Data.Custom
         }
 
         /// <summary>
-        ///     Reader converts each line of the data source into BaseData objects.
+        /// Reader converts each line of the data source into BaseData objects.
         /// </summary>
         /// <param name="config">Subscription data config setup object</param>
         /// <param name="content">Content of the source document</param>
         /// <param name="date">Date of the requested data</param>
         /// <param name="isLiveMode">true if we're in live mode, false for backtesting mode</param>
         /// <returns>
-        ///     Collection of BaseData objects
+        /// Collection of USEnergyInformation objects
         /// </returns>
         public override BaseData Reader(SubscriptionDataConfig config, string content, DateTime date, bool isLiveMode)
         {
             try
             {
-                var rawData = JObject.Parse(content)["series"][0]["data"];                
-                var format = GetFormat(config.Symbol.Value);
                 var objectList = new List<USEnergyInformation>();
+                var series = JObject.Parse(content)["series"][0];
+                var elements = (JArray)series["data"];
+                var format = GetFormat(config.Symbol.Value);
 
-                foreach (var element in (JArray)rawData)
+                if (isLiveMode)
+                {
+                    date = DateTime.ParseExact(series["end"].ToString(), format, CultureInfo.InvariantCulture);
+                }
+
+                foreach (var element in elements)
                 {
                     decimal value;
-                    if (!Decimal.TryParse(element[1].ToString(), out value))
+                    if (!decimal.TryParse(element[1].ToString(), out value))
                     {
                         continue;
                     }
@@ -383,5 +374,6 @@ namespace QuantConnect.Data.Custom
             return new BaseDataCollection(date, config.Symbol, objectList);
         }
     }
+}
 }
 }

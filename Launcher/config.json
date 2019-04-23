@@ -6,10 +6,10 @@
   // two predefined environments, 'backtesting' and 'live', feel free
   // to add more!
 
-  "environment": "backtesting", // "live-paper", "backtesting", "live-interactive", "live-interactive-iqfeed"
+  "environment": "live-oanda", // "live-paper", "backtesting", "live-interactive", "live-interactive-iqfeed"
 
   // algorithm class selector
-  "algorithm-type-name": "BasicTemplateFrameworkAlgorithm",
+  "algorithm-type-name": "TiingoDailyDataAlgorithm",
 
   // Algorithm language selector - options CSharp, FSharp, VisualBasic, Python, Java
   "algorithm-language": "CSharp",
@@ -83,8 +83,8 @@
 
   // oanda configuration
   "oanda-environment": "Practice",
-  "oanda-access-token": "",
-  "oanda-account-id": "",
+  "oanda-access-token": "c0339618b72a8990c8c49e67edba32a8-f8d7a37143d3dc3c17f3247dfccdbcf9",
+  "oanda-account-id": "4440733",
 
   // fxcm configuration
   "fxcm-server": "http://www.fxcorporate.com/Hosts.jsp",
