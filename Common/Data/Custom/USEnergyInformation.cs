@@ -20,6 +20,7 @@ using System.Globalization;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using QuantConnect.Data.UniverseSelection;
+using QuantConnect.Logging;
 
 namespace QuantConnect.Data.Custom
 {
@@ -160,7 +161,7 @@ namespace QuantConnect.Data.Custom
 
                 if (isLiveMode)
                 {
-                    date = DateTime.ParseExact(series["end"].ToString(), format, CultureInfo.InvariantCulture);
+                    date = DateTime.ParseExact(series["updated"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
                 }
 
                 foreach (var element in elements)
@@ -184,7 +185,7 @@ namespace QuantConnect.Data.Custom
             }
             catch(Exception err)
             {
-                Logging.Log.Error($"Exception: {err}");
+                Log.Error($"Exception: {err}");
                 return null;
             }
         }
